@@ -4,7 +4,7 @@
  * @overview  Stack/Construct からは本マップのみを参照し、ハードコードを禁止する
  */
 export const envs = {
-  sbx: { account: '111111111111', region: 'ap-northeast-1' },
+  sbx: { account: '338456725408', region: 'ap-northeast-1' },
   dev: { account: '222222222222', region: 'ap-northeast-1' },
   stg: { account: '333333333333', region: 'ap-northeast-1' },
   prod: { account: '444444444444', region: 'ap-northeast-1' }

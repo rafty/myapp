@@ -23,8 +23,14 @@ describe('AwsSolutionsChecks', () => {
     Aspects.of(app).add(new AwsSolutionsChecks({ verbose: true }));
 
     const errors = Annotations.fromStack(stack).findError('*', Match.stringLikeRegexp('AwsSolutions-'));
-    // VPC7 はスタック内で正当な suppress を付与済みのため除外
-    const remaining = errors.filter((e) => !String(e.entry?.data ?? '').includes('AwsSolutions-VPC7'));
+    // 抑止ポリシーのある既知の例外を除外
+    const remaining = errors.filter((e) => {
+      const data = String(e.entry?.data ?? '');
+      if (data.includes('AwsSolutions-VPC7')) return false;
+      // Flow Logs → CloudWatch Logs の PutLogEvents は log-stream:* が不可避（精密 suppress 済み）
+      if (data.includes('AwsSolutions-IAM5') && data.includes('log-group/myapp-network-logs:log-stream:*')) return false;
+      return true;
+    });
     expect(remaining).toHaveLength(0);
   });
 });
