@@ -67,5 +67,7 @@ export class NetworkStack extends cdk.Stack {
         },
       ],
     );
+
+    // IAM5 のスタック全体 suppress は不採用（各リソースで最小限の抑止とする）
   }
 }

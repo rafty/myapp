@@ -1,22 +1,31 @@
-# Resources
+# Resources Summary
 
-本ドキュメントは `myapp` の Network Stack における主要リソースの一覧です。生成元: CDK 構成（概要）。
+This document lists key resources provisioned by `NetworkStack` with a focus on security controls.
 
-- Stack 名: `myapp-<stage>-an1-network`
-- 構成要素:
-  - VPC: `MyappVpc` (10.100.0.0/16)
-  - Subnets (2AZ x 3-tier + Egress Public): `Egress`, `Frontend`, `Application`, `Datastore`
-  - NAT Gateway: 2 (各 AZ)
-  - Internet Gateway: 1
-  - VPC Endpoints:
-    - Gateway: S3
-    - Interface: ECR, ECR_DOCKER, CLOUDWATCH_LOGS, STS, EC2, EC2_MESSAGES, ECS, ECS_AGENT, ECS_TELEMETRY
-    - Optional (stage トグル): SECRETS_MANAGER, SSM, SSM_MESSAGES, KMS, DYNAMODB(Gateway)
-  - Security Groups:
-    - Internal ALB SG（オンプレ CIDR は TBD）
-    - Application SG（ALB → App: 80/443 許可）
-    - Datastore SG（App → Datastore: 6379 許可）
-  - Flow Logs: CloudWatch Logs（保持 365 日）
-  - Tags: `Project=myapp`, `Environment=<stage>`, `Owner=JP-Solution`, `CostCenter=SOL-12345678`
+## Stacks / Constructs
+- Stack: `myapp-<stage>-an1-network`
+  - Constructs:
+    - `VpcCore`: VPC, Subnets (Frontend/Application/Datastore), NAT GW, IGW
+    - `SecurityBaseline`: SG (ALB/App/Datastore/VPCE), NACL (Frontend/Application/Datastore)
+    - `VpcEndpoints`: Interface/Gateway endpoints (skeleton)
+    - `FlowLogs`: CloudWatch Logs + KMS encryption, VPC Flow Logs (ALL)
 
-注: Logical ID や詳細プロパティは `cdk.out/<stack>.template.json` を参照。
+## CloudWatch Logs
+- LogGroup: `myapp-network-logs`
+  - Retention: 1 year
+  - KMS: Customer Managed Key (this stack)
+
+## KMS Key (CloudWatch Logs Encryption)
+- Key Rotation: Enabled
+- Key Policy (least privilege):
+  - Allow CWL service principal `logs.<region>.amazonaws.com` to use Encrypt/Decrypt/ReEncrypt*/GenerateDataKey* limited by Encryption Context of `myapp-network-logs` (and its streams)
+  - Allow `kms:CreateGrant`/`kms:DescribeKey` with `kms:GrantIsForAWSResource=true`
+  - Allow account root with `kms:ViaService = logs.<region>.amazonaws.com` and `kms:CallerAccount = <account>`
+
+## IAM for VPC Flow Logs
+- Role: `VpcFlowLogsRole`
+  - Trust: `vpc-flow-logs.amazonaws.com`
+  - Inline Policy (explicit):
+    - Allow `logs:CreateLogStream`, `logs:DescribeLogStreams` on LogGroup ARN only
+    - Allow `logs:PutLogEvents` on `log-group:...:log-stream:*` (CWL spec requires wildcard for dynamic log streams)
+  - cdk-nag: Precise suppression applied only for `PutLogEvents` on `log-stream:*` with documented reason
