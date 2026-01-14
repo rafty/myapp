@@ -1,20 +1,25 @@
 #!/usr/bin/env node
-import * as cdk from 'aws-cdk-lib/core';
-import { MyappStack } from '../lib/myapp-stack';
+import * as cdk from 'aws-cdk-lib';
+import { envs, defaultStage, shortRegion } from '../lib/env-config';
+import { NetworkStack } from '../lib/network-stack';
 
 const app = new cdk.App();
-new MyappStack(app, 'MyappStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  // env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+// stage は context → env → default の優先で決定
+const stage =
+  (app.node.tryGetContext('stage') as keyof typeof envs | undefined) ??
+  (process.env.CDK_STAGE as keyof typeof envs | undefined) ??
+  defaultStage;
 
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
+const project = 'myapp';
+// env 未設定の synth（ローカル）でも命名のために既定リージョン短縮名を使用
+const regionShort = shortRegion('ap-northeast-1');
 
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
+// Stack 名規則: <project>-<stage>-<region>-<component>
+const networkStackId = `${project}-${stage}-${regionShort}-network`;
+
+new NetworkStack(app, networkStackId, {
+  // ローカル synth では環境非依存 Stack とする（デプロイ時は CI から env を注入）
+  project,
+  stage,
 });
