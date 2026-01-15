@@ -1,31 +1,31 @@
-# Resources Summary
+# リソースサマリ
 
-This document lists key resources provisioned by `NetworkStack` with a focus on security controls.
+このドキュメントは `NetworkStack` により作成される主要リソースを、セキュリティ制御に焦点を当てて一覧化します。
 
 ## Stacks / Constructs
 - Stack: `myapp-<stage>-an1-network`
   - Constructs:
-    - `VpcCore`: VPC, Subnets (Frontend/Application/Datastore), NAT GW, IGW
-    - `SecurityBaseline`: SG (ALB/App/Datastore/VPCE), NACL (Frontend/Application/Datastore)
-    - `VpcEndpoints`: Interface/Gateway endpoints (skeleton)
-    - `FlowLogs`: CloudWatch Logs + KMS encryption, VPC Flow Logs (ALL)
+    - `VpcCore`: VPC、サブネット（Frontend / Application / Datastore）、NAT GW、IGW
+    - `SecurityBaseline`: Security Group（ALB / App / Datastore / VPCE）、NACL（Frontend / Application / Datastore）
+    - `VpcEndpoints`: Interface / Gateway Endpoints（スケルトン）
+    - `FlowLogs`: CloudWatch Logs + KMS 暗号化、VPC Flow Logs（ALL）
 
 ## CloudWatch Logs
 - LogGroup: `myapp-network-logs`
-  - Retention: 1 year
-  - KMS: Customer Managed Key (this stack)
+  - 保持期間: 1 年
+  - KMS: Customer Managed Key（本スタックで管理）
 
-## KMS Key (CloudWatch Logs Encryption)
-- Key Rotation: Enabled
-- Key Policy (least privilege):
-  - Allow CWL service principal `logs.<region>.amazonaws.com` to use Encrypt/Decrypt/ReEncrypt*/GenerateDataKey* limited by Encryption Context of `myapp-network-logs` (and its streams)
-  - Allow `kms:CreateGrant`/`kms:DescribeKey` with `kms:GrantIsForAWSResource=true`
-  - Allow account root with `kms:ViaService = logs.<region>.amazonaws.com` and `kms:CallerAccount = <account>`
+## KMS Key（CloudWatch Logs 暗号化）
+- キーローテーション: 有効
+- Key Policy（最小権限）:
+  - CloudWatch Logs のサービスプリンシパル `logs.<region>.amazonaws.com` に対して、`myapp-network-logs`（およびそのストリーム）の Encryption Context に限定した Encrypt / Decrypt / ReEncrypt* / GenerateDataKey* を許可
+  - `kms:GrantIsForAWSResource=true` を条件とした `kms:CreateGrant` / `kms:DescribeKey` を許可
+  - アカウント root については `kms:ViaService = logs.<region>.amazonaws.com` かつ `kms:CallerAccount = <account>` の条件で許可
 
-## IAM for VPC Flow Logs
+## VPC Flow Logs 用 IAM
 - Role: `VpcFlowLogsRole`
-  - Trust: `vpc-flow-logs.amazonaws.com`
-  - Inline Policy (explicit):
-    - Allow `logs:CreateLogStream`, `logs:DescribeLogStreams` on LogGroup ARN only
-    - Allow `logs:PutLogEvents` on `log-group:...:log-stream:*` (CWL spec requires wildcard for dynamic log streams)
-  - cdk-nag: Precise suppression applied only for `PutLogEvents` on `log-stream:*` with documented reason
+  - 信頼ポリシー（Trust）：`vpc-flow-logs.amazonaws.com`
+  - インラインポリシー（明示的）:
+    - LogGroup の ARN に対してのみ `logs:CreateLogStream`、`logs:DescribeLogStreams` を許可
+    - 動的に作成される LogStream の仕様上必要なワイルドカードのため、`log-group:...:log-stream:*` に対する `logs:PutLogEvents` を許可（CWL の仕様）
+  - cdk-nag: `log-stream:*` に対する `PutLogEvents` のみ、理由を明記したうえでピンポイントに suppress を適用
