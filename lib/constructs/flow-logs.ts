@@ -42,11 +42,14 @@ export class FlowLogs extends Construct {
     // CloudWatch Logs サービスが当該 KMS Key を使用できるように Key Policy を付与
     // 最小権限: 対象 LogGroup の Encryption Context に限定
     const stack = cdk.Stack.of(this);
+    // CloudWatch Logs が KMS に渡す Encryption Context の aws:logs:arn は
+    // コロン区切り（log-group:<name>）の ARN 形式となるため、条件一致用 ARN も同形式で生成する
     const logsArnForCondition = cdk.Arn.format(
       {
         service: 'logs',
         resource: 'log-group',
         resourceName: logGroupName,
+        arnFormat: cdk.ArnFormat.COLON_RESOURCE_NAME,
         region: stack.region,
         account: stack.account,
         partition: stack.partition,
