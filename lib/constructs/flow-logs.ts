@@ -32,8 +32,9 @@ export class FlowLogs extends Construct {
     });
 
     // CloudWatch Log Group（365 日保持 + KMS 暗号化）
+    const logGroupName = `${project}-${props.stage}-network-logs`;
     const logGroup = new logs.LogGroup(this, 'VpcFlowLogsGroup', {
-      logGroupName: `${project}-network-logs`,
+      logGroupName,
       retention: logs.RetentionDays.ONE_YEAR,
       encryptionKey: key,
     });
@@ -45,7 +46,7 @@ export class FlowLogs extends Construct {
       {
         service: 'logs',
         resource: 'log-group',
-        resourceName: `${project}-network-logs`,
+        resourceName: logGroupName,
         region: stack.region,
         account: stack.account,
         partition: stack.partition,
@@ -101,7 +102,7 @@ export class FlowLogs extends Construct {
       {
         service: 'logs',
         resource: 'log-group',
-        resourceName: `${project}-network-logs`,
+        resourceName: logGroupName,
         arnFormat: cdk.ArnFormat.COLON_RESOURCE_NAME,
         region: stack.region,
         account: stack.account,
@@ -133,7 +134,7 @@ export class FlowLogs extends Construct {
           'CloudWatch Logs の PutLogEvents は動的な LogStream に対する書き込みであり、対象 LogGroup 配下の log-stream:* への限定的ワイルドカードが必須。',
         appliesTo: [
           'Action::logs:PutLogEvents',
-          'Resource::arn:<AWS::Partition>:logs:<AWS::Region>:<AWS::AccountId>:log-group/myapp-network-logs:log-stream:*',
+          `Resource::arn:<AWS::Partition>:logs:<AWS::Region>:<AWS::AccountId>:log-group/${logGroupName}:log-stream:*`,
         ],
       },
     ], true);
