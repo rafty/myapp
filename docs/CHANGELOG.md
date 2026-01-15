@@ -1,20 +1,22 @@
-Changelog
+変更履歴
 
-Unreleased
-Added
-- docs/resources.md: Resource inventory focused on security controls
-- docs/architecture.md: High-level overview and key policies
-- docs/network.md: Network layout and security baseline
+未リリース
+追加
+- docs/resources.md: セキュリティ制御に焦点を当てたリソース一覧を追加
+- docs/architecture.md: ハイレベルな概要と主要ポリシーを追加
+- docs/network.md: ネットワーク構成とセキュリティベースラインを追加
+- docs/*: ガイドラインに基づき英語から日本語へ翻訳
+- docs/architecture.md, docs/network.md: Mermaid 図を追加し、構成の可視化を復元
 
-Changed
-- flow-logs: Minimized KMS Key policy by removing temporary broad permission and enforcing least-privileged statements (EncryptionContext scoping, GrantIsForAWSResource, ViaService)
-- flow-logs: Refactored VPC Flow Logs IAM role to least privilege (separate statements for LogGroup vs LogStreams)
-- tests: Adjusted cdk-nag test to exclude documented, precisely-suppressed `AwsSolutions-IAM5` related to dynamic `log-stream:*`
-- snapshots: Updated due to IAM policy restructuring
+変更
+- flow-logs: 一時的な広範な許可を削除し、最小権限のステートメントを徹底（Encryption Context のスコープ、GrantIsForAWSResource、ViaService）
+- flow-logs: VPC Flow Logs 用 IAM ロールを最小権限化（LogGroup と LogStreams を分離して記述）
+- tests: 動的な `log-stream:*` に関する、理由を明記したピンポイントな `AwsSolutions-IAM5` の suppress を考慮するよう cdk-nag テストを調整
+- snapshots: IAM ポリシー再構成に伴い更新
 
-Security
-- Enforced least privilege on KMS and IAM for CloudWatch Logs integration
-- cdk-nag coverage retained; precise suppression only for unavoidable `log-stream:*`
+セキュリティ
+- CloudWatch Logs 連携における KMS および IAM の最小権限を徹底
+- cdk-nag のカバレッジは維持し、やむを得ない `log-stream:*` のみピンポイントに suppress
 
-0.1.0 - Initial
-- Project skeleton with Network stack, VPC, SG, NACL, endpoints (skeleton), Flow Logs (initial)
+0.1.0 - 初期リリース
+- Network Stack、VPC、Security Group、NACL、Endpoints（スケルトン）、Flow Logs（初期）を含むプロジェクトスケルトン
