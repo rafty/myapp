@@ -9,7 +9,7 @@ npm run deploy:<stage>
 
 ### cdk destroy
 ```shell
-npm run destroy:<stage>
+cdk destroy -c stage=sbx
 ```
 - CloudWatch Logs Group : myapp-sbx-network-logsなどを手動で削除すること
 - CloudFormation Stackのリソースで削除をSkippedされたものを手動で削除すること 
