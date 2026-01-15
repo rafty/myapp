@@ -1,4 +1,23 @@
-myapp CDK project
+# myapp project
+
+# Terminal 手動操作
+
+### cdk deploy
+```shell
+npm run deploy:<stage>
+```
+
+### cdk destroy
+```shell
+npm run destroy:<stage>
+```
+- CloudWatch Logs Group : myapp-sbx-network-logsなどを手動で削除すること
+- CloudFormation Stackのリソースで削除をSkippedされたものを手動で削除すること 
+
+
+---
+
+# myapp CDK project
 
 本リポジトリは AWS CDK (TypeScript) によるネットワーク基盤（Network Stack）を管理します。
 
@@ -26,3 +45,5 @@ Useful commands
 * `npm run synth`   emits the synthesized CloudFormation template
 * `npm run diff`    compare deployed stack with current state
 * `npm run deploy:<stage>` deploy this stack to a specific stage
+
+
